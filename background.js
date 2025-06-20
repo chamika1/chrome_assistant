@@ -1,7 +1,7 @@
 // Background service worker for Chrome AI Assistant Extension
 
 // Default API Key
-const DEFAULT_API_KEY = 'AIzaSyCTSoutDAGHhBzljAHF5PJ-uwYNIowRJdc';
+const DEFAULT_API_KEY = 'your-key';
 
 class GeminiAPI {
   constructor() {
