@@ -127,7 +127,7 @@ The extension uses Google's Gemini 2.0 Flash model via the REST API:
 - Endpoint: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent`
 - Authentication: API key in query parameter
 - Request format: JSON with content parts
-- Pre-configured API Key: `AIzaSyCTSoutDAGHhBzljAHF5PJ-uwYNIowRJdc`
+- Pre-configured API Key: `ewplace with urs`
 
 ## 🔧 Configuration
 
