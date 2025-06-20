@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini 2.0 Flash API Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+        }
+        
+        .test-container {
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background: #5a6fd8;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .response {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: inherit;
+        }
+        
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 Gemini 2.0 Flash API Test</h1>
+        <p>Test the Gemini 2.0 Flash model integration</p>
+    </div>
+
+    <div class="info">
+        <strong>API Configuration:</strong><br>
+        Model: gemini-2.0-flash-exp<br>
+        API Key:  (configured)
+    </div>
+
+    <div class="test-container">
+        <h3>Direct API Test</h3>
+        <div class="input-group">
+            <label for="test-prompt">Test Prompt:</label>
+            <textarea id="test-prompt" rows="4" placeholder="Enter your test prompt here...">Hello! Please introduce yourself and tell me about your capabilities as Gemini 2.0 Flash model.</textarea>
+        </div>
+        
+        <button id="test-btn" onclick="testAPI()">Test API Connection</button>
+        
+        <div id="api-response" class="response" style="display: none;"></div>
+    </div>
+
+    <div class="test-container">
+        <h3>Extension Integration Test</h3>
+        <p>These tests will work once the extension is loaded:</p>
+        
+        <button onclick="testExtensionAPI()">Test Extension API</button>
+        <button onclick="testContextMenu()">Test Context Menu</button>
+        <button onclick="testSidebar()">Test Sidebar</button>
+        
+        <div id="extension-response" class="response" style="display: none;"></div>
+    </div>
+
+    <div class="test-container">
+        <h3>Feature Tests</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button onclick="testSummarize()">Test Summarize</button>
+            <button onclick="testTranslate()">Test Translate</button>
+            <button onclick="testCodeExplain()">Test Code Explain</button>
+            <button onclick="testBugDetection()">Test Bug Detection</button>
+        </div>
+        
+        <div id="feature-response" class="response" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_KEY = process.env.API_KEY;
+        const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+
+        async function testAPI() {
+            const prompt = document.getElementById('test-prompt').value;
+            const responseDiv = document.getElementById('api-response');
+            const testBtn = document.getElementById('test-btn');
+            
+            if (!prompt.trim()) {
+                showResponse(responseDiv, 'Please enter a test prompt', 'error');
+                return;
+            }
+            
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<span class="loading"></span>Testing...';
+            responseDiv.style.display = 'block';
+            responseDiv.className = 'response';
+            responseDiv.innerHTML = 'Sending request to Gemini 2.0 Flash...';
+            
+            try {
+                const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                const aiResponse = data.candidates[0].content.parts[0].text;
+                
+                showResponse(responseDiv, `✅ API Test Successful!\n\nResponse:\n${aiResponse}`, 'success');
+                
+            } catch (error) {
+                showResponse(responseDiv, `❌ API Test Failed!\n\nError: ${error.message}`, 'error');
+            } finally {
+                testBtn.disabled = false;
+                testBtn.innerHTML = 'Test API Connection';
+            }
+        }
+        
+        function showResponse(element, text, type) {
+            element.style.display = 'block';
+            element.className = `response ${type}`;
+            element.textContent = text;
+        }
+        
+        // Extension integration tests
+        function testExtensionAPI() {
+            const responseDiv = document.getElementById('extension-response');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                chrome.runtime.sendMessage({
+                    action: 'generateContent',
+                    prompt: 'Hello from the test page! Please confirm you are Gemini 2.0 Flash model.'
+                }, (response) => {
+                    if (response && response.success) {
+                        showResponse(responseDiv, `✅ Extension API Working!\n\nResponse: ${response.response}`, 'success');
+                    } else {
+                        showResponse(responseDiv, `❌ Extension API Error: ${response ? response.error : 'No response'}`, 'error');
+                    }
+                });
+            } else {
+                showResponse(responseDiv, '❌ Extension not loaded or not available', 'error');
+            }
+        }
+        
+        function testContextMenu() {
+            const responseDiv = document.getElementById('extension-response');
+            showResponse(responseDiv, 'ℹ️ To test context menu:\n1. Select some text on this page\n2. Right-click\n3. Look for "🤖 AI Assistant" menu\n4. Try the sub-menu options', 'info');
+        }
+        
+        function testSidebar() {
+            const responseDiv = document.getElementById('extension-response');
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                    chrome.tabs.sendMessage(tabs[0].id, {action: 'toggleSidebar'});
+                    showResponse(responseDiv, '✅ Sidebar toggle command sent!', 'success');
+                });
+            } else {
+                showResponse(responseDiv, '❌ Extension not available', 'error');
+            }
+        }
+        
+        // Feature-specific tests
+        async function testSummarize() {
+            const responseDiv = document.getElementById('feature-response');
+            const testContent = "Artificial Intelligence has revolutionized many industries. Machine learning algorithms can process vast amounts of data to identify patterns and make predictions. This technology is being applied in healthcare for diagnosis, in finance for fraud detection, and in transportation for autonomous vehicles.";
+            
+            await testFeature('Please summarize this text: ' + testContent, responseDiv);
+        }
+        
+        async function testTranslate() {
+            const responseDiv = document.getElementById('feature-response');
+            await testFeature('Please translate "Hello, how are you?" to Sinhala and Tamil', responseDiv);
+        }
+        
+        async function testCodeExplain() {
+            const responseDiv = document.getElementById('feature-response');
+            const code = `function fibonacci(n) {
+    if (n <= 1) return n;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}`;
+            await testFeature('Please explain this code step by step:\n\n' + code, responseDiv);
+        }
+        
+        async function testBugDetection() {
+            const responseDiv = document.getElementById('feature-response');
+            const buggyCode = `function divide(a, b) {
+    return a / b;
+}
+console.log(divide(10, 0));`;
+            await testFeature('Please find potential bugs in this code:\n\n' + buggyCode, responseDiv);
+        }
+        
+        async function testFeature(prompt, responseDiv) {
+            responseDiv.style.display = 'block';
+            responseDiv.className = 'response';
+            responseDiv.innerHTML = 'Testing feature...';
+            
+            try {
+                const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const aiResponse = data.candidates[0].content.parts[0].text;
+                
+                showResponse(responseDiv, `✅ Feature Test Successful!\n\nResponse:\n${aiResponse}`, 'success');
+                
+            } catch (error) {
+                showResponse(responseDiv, `❌ Feature Test Failed!\n\nError: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-test API on page load
+        window.addEventListener('load', function() {
+            console.log('Gemini 2.0 Flash API Test Page Loaded');
+            console.log('API Key configured:', API_KEY ? 'Yes' : 'No');
+            console.log('API URL:', API_URL);
+        });
+    </script>
+</body>
+</html>

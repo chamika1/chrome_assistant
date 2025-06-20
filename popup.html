@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 350px;
+            min-height: 400px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .popup-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .popup-header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .popup-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .quick-actions {
+            padding: 20px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 16px 12px;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .action-btn .icon {
+            font-size: 20px;
+        }
+
+        .main-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .main-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .main-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .main-btn .icon {
+            font-size: 18px;
+        }
+
+        .api-status {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 12px;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-connected {
+            background: #28a745;
+        }
+
+        .status-disconnected {
+            background: #dc3545;
+        }
+
+        .settings-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .settings-link:hover {
+            color: white;
+        }
+
+        .shortcuts {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        .shortcuts h4 {
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .shortcut-key {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="popup-header">
+        <h1>🤖 AI Assistant</h1>
+        <p>Your intelligent browsing companion</p>
+    </div>
+
+    <div class="quick-actions">
+        <div class="action-grid">
+            <button class="action-btn" id="summarize-page">
+                <span class="icon">📄</span>
+                <span>Summarize</span>
+            </button>
+            <button class="action-btn" id="translate-text">
+                <span class="icon">🌐</span>
+                <span>Translate</span>
+            </button>
+            <button class="action-btn" id="explain-content">
+                <span class="icon">💡</span>
+                <span>Explain</span>
+            </button>
+            <button class="action-btn" id="code-help">
+                <span class="icon">💻</span>
+                <span>Code Help</span>
+            </button>
+        </div>
+
+        <div class="main-actions">
+            <button class="main-btn" id="open-sidebar">
+                <span class="icon">💬</span>
+                <span>Open Chat Assistant</span>
+            </button>
+            <button class="main-btn" id="analyze-page">
+                <span class="icon">🔍</span>
+                <span>Analyze Current Page</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="api-status">
+        <span class="status-indicator" id="status-indicator"></span>
+        <span id="status-text">Checking API connection...</span>
+        <br>
+        <span class="settings-link" id="configure-api">Configure API Key</span>
+    </div>
+
+    <div class="shortcuts">
+        <h4>Keyboard Shortcuts:</h4>
+        <div class="shortcut-item">
+            <span>Toggle Sidebar</span>
+            <span class="shortcut-key">Ctrl+Shift+A</span>
+        </div>
+        <div class="shortcut-item">
+            <span>Right-click menu</span>
+            <span class="shortcut-key">Select text</span>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

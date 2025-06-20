@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant Debug Console</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .debug-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .debug-section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+        
+        .status-ok {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #5a6fd8;
+        }
+        
+        .log-container {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+        }
+        
+        .input-group {
+            margin: 10px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 AI Assistant Debug Console</h1>
+        <p>Diagnose and test your Chrome AI Assistant Extension</p>
+    </div>
+
+    <div class="debug-section">
+        <h3>Extension Status</h3>
+        <div id="extension-status">
+            <div class="status-item" id="chrome-api-status">
+                <span>Chrome Extension API</span>
+                <span id="chrome-api-indicator">Checking...</span>
+            </div>
+            <div class="status-item" id="content-script-status">
+                <span>Content Script</span>
+                <span id="content-script-indicator">Checking...</span>
+            </div>
+            <div class="status-item" id="background-script-status">
+                <span>Background Script</span>
+                <span id="background-script-indicator">Checking...</span>
+            </div>
+            <div class="status-item" id="api-key-status">
+                <span>API Key Configuration</span>
+                <span id="api-key-indicator">Checking...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h3>Quick Tests</h3>
+        <button onclick="testExtensionLoaded()">Test Extension Loaded</button>
+        <button onclick="testAPIConnection()">Test API Connection</button>
+        <button onclick="testContentScript()">Test Content Script</button>
+        <button onclick="testContextMenu()">Test Context Menu</button>
+        <button onclick="clearLogs()">Clear Logs</button>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>Manual API Test</h3>
+        <div class="input-group">
+            <label for="test-prompt">Test Prompt:</label>
+            <textarea id="test-prompt" rows="3" placeholder="Enter a test prompt...">Hello! Please respond with a simple greeting to confirm the API is working.</textarea>
+        </div>
+        <button onclick="manualAPITest()">Send Test Request</button>
+        <div id="manual-test-result"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>Console Logs</h3>
+        <div id="debug-logs" class="log-container">
+            Debug logs will appear here...
+        </div>
+    </div>
+
+    <script>
+        let logContainer = document.getElementById('debug-logs');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logContainer.textContent += logEntry;
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(logEntry);
+        }
+        
+        function clearLogs() {
+            logContainer.textContent = 'Debug logs cleared...\n';
+        }
+        
+        function updateStatus(elementId, status, message) {
+            const element = document.getElementById(elementId);
+            const indicator = element.querySelector('span:last-child');
+            
+            element.className = `status-item status-${status}`;
+            indicator.textContent = message;
+        }
+        
+        function addTestResult(title, result, details = '') {
+            const resultsContainer = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'test-result';
+            resultDiv.innerHTML = `
+                <strong>${title}:</strong> ${result}
+                ${details ? `<br><small>${details}</small>` : ''}
+            `;
+            resultsContainer.appendChild(resultDiv);
+        }
+        
+        // Initialize status checks
+        async function initializeDebug() {
+            log('Starting debug initialization...');
+            
+            // Check Chrome Extension API
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                updateStatus('chrome-api-status', 'ok', '✅ Available');
+                log('Chrome Extension API is available');
+            } else {
+                updateStatus('chrome-api-status', 'error', '❌ Not Available');
+                log('Chrome Extension API is not available', 'error');
+            }
+            
+            // Check Content Script
+            setTimeout(() => {
+                const widget = document.getElementById('ai-assistant-widget');
+                if (widget) {
+                    updateStatus('content-script-status', 'ok', '✅ Loaded');
+                    log('Content script loaded successfully');
+                } else {
+                    updateStatus('content-script-status', 'error', '❌ Not Loaded');
+                    log('Content script not detected', 'error');
+                }
+            }, 2000);
+            
+            // Check API Key
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                try {
+                    chrome.runtime.sendMessage({ action: 'getApiKey' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            updateStatus('api-key-status', 'error', '❌ Error');
+                            log(`API key check error: ${chrome.runtime.lastError.message}`, 'error');
+                        } else if (response && response.apiKey) {
+                            updateStatus('api-key-status', 'ok', '✅ Configured');
+                            log('API key is configured');
+                        } else {
+                            updateStatus('api-key-status', 'warning', '⚠️ Missing');
+                            log('API key is not configured', 'warning');
+                        }
+                    });
+                } catch (error) {
+                    updateStatus('api-key-status', 'error', '❌ Error');
+                    log(`API key check failed: ${error.message}`, 'error');
+                }
+            }
+            
+            // Check Background Script
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                try {
+                    chrome.runtime.sendMessage({ action: 'ping' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            updateStatus('background-script-status', 'error', '❌ Error');
+                            log(`Background script error: ${chrome.runtime.lastError.message}`, 'error');
+                        } else {
+                            updateStatus('background-script-status', 'ok', '✅ Active');
+                            log('Background script is active');
+                        }
+                    });
+                } catch (error) {
+                    updateStatus('background-script-status', 'error', '❌ Error');
+                    log(`Background script check failed: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        function testExtensionLoaded() {
+            log('Testing extension loaded...');
+            
+            if (typeof chrome === 'undefined') {
+                addTestResult('Extension Test', '❌ FAILED', 'Chrome API not available');
+                return;
+            }
+            
+            if (!chrome.runtime) {
+                addTestResult('Extension Test', '❌ FAILED', 'Chrome runtime not available');
+                return;
+            }
+            
+            addTestResult('Extension Test', '✅ PASSED', 'Extension APIs are available');
+        }
+        
+        function testAPIConnection() {
+            log('Testing API connection...');
+            
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                addTestResult('API Test', '❌ FAILED', 'Extension not available');
+                return;
+            }
+            
+            chrome.runtime.sendMessage({
+                action: 'generateContent',
+                prompt: 'Hello! Please respond with "API test successful" to confirm the connection.'
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    addTestResult('API Test', '❌ FAILED', chrome.runtime.lastError.message);
+                    log(`API test failed: ${chrome.runtime.lastError.message}`, 'error');
+                } else if (response && response.success) {
+                    addTestResult('API Test', '✅ PASSED', 'API responded successfully');
+                    log('API test passed');
+                } else {
+                    addTestResult('API Test', '❌ FAILED', response ? response.error : 'No response');
+                    log(`API test failed: ${response ? response.error : 'No response'}`, 'error');
+                }
+            });
+        }
+        
+        function testContentScript() {
+            log('Testing content script...');
+            
+            const widget = document.getElementById('ai-assistant-widget');
+            if (widget) {
+                addTestResult('Content Script Test', '✅ PASSED', 'Floating widget found');
+                log('Content script test passed');
+            } else {
+                addTestResult('Content Script Test', '❌ FAILED', 'Floating widget not found');
+                log('Content script test failed', 'error');
+            }
+        }
+        
+        function testContextMenu() {
+            log('Testing context menu...');
+            addTestResult('Context Menu Test', 'ℹ️ MANUAL', 'Right-click on selected text to test context menu');
+        }
+        
+        async function manualAPITest() {
+            const prompt = document.getElementById('test-prompt').value;
+            const resultDiv = document.getElementById('manual-test-result');
+            
+            if (!prompt.trim()) {
+                resultDiv.innerHTML = '<div class="test-result">Please enter a test prompt</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="test-result">Sending request...</div>';
+            log(`Manual API test: ${prompt}`);
+            
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                resultDiv.innerHTML = '<div class="test-result">❌ Extension not available</div>';
+                return;
+            }
+            
+            chrome.runtime.sendMessage({
+                action: 'generateContent',
+                prompt: prompt
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    resultDiv.innerHTML = `<div class="test-result">❌ Error: ${chrome.runtime.lastError.message}</div>`;
+                    log(`Manual API test failed: ${chrome.runtime.lastError.message}`, 'error');
+                } else if (response && response.success) {
+                    resultDiv.innerHTML = `<div class="test-result">✅ Success:<br><br>${response.response}</div>`;
+                    log('Manual API test passed');
+                } else {
+                    resultDiv.innerHTML = `<div class="test-result">❌ Failed: ${response ? response.error : 'No response'}</div>`;
+                    log(`Manual API test failed: ${response ? response.error : 'No response'}`, 'error');
+                }
+            });
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeDebug);
+        
+        // Capture console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            log(args.join(' '), 'info');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            log(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            log(args.join(' '), 'warning');
+        };
+    </script>
+</body>
+</html>

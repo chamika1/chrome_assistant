@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant Extension Test Page</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .test-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .instructions {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .instructions h4 {
+            color: #155724;
+            margin-bottom: 10px;
+        }
+        
+        .step {
+            margin: 10px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .step::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .warning {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 AI Assistant Extension Test Page</h1>
+        <p>Use this page to test your Chrome AI Assistant Extension features</p>
+    </div>
+
+    <div class="instructions">
+        <h4>📋 Setup Instructions:</h4>
+        <div class="step">Open Chrome and go to <code>chrome://extensions/</code></div>
+        <div class="step">Enable "Developer mode" (toggle in top right)</div>
+        <div class="step">Click "Load unpacked" and select the extension folder</div>
+        <div class="step">Get your Gemini API key from <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a></div>
+        <div class="step">Click the extension icon and configure your API key</div>
+        <div class="step">Refresh this page and start testing!</div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔍 Text Analysis Testing</h3>
+        <p>Select the text below and right-click to test AI features:</p>
+        <p><span class="highlight">Artificial Intelligence (AI) is revolutionizing how we interact with technology. Machine learning algorithms can now process vast amounts of data to identify patterns, make predictions, and automate complex tasks. This technology is being applied across various industries including healthcare, finance, transportation, and education.</span></p>
+        
+        <p><strong>Test Actions:</strong></p>
+        <ul>
+            <li>Select text and right-click → "Explain Selected Text"</li>
+            <li>Select text and right-click → "Summarize"</li>
+            <li>Select text and right-click → "Translate"</li>
+            <li>Select text and right-click → "Improve Writing"</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>💻 Code Analysis Testing</h3>
+        <p>Select the code below and right-click to test coding features:</p>
+        
+        <div class="code-block">
+function fibonacci(n) {
+    if (n <= 1) return n;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+// Calculate the 10th Fibonacci number
+const result = fibonacci(10);
+console.log("10th Fibonacci number:", result);
+
+// This implementation has exponential time complexity
+// It recalculates the same values multiple times
+        </div>
+        
+        <p><strong>Test Actions:</strong></p>
+        <ul>
+            <li>Select code and right-click → "Explain Code"</li>
+            <li>Select code and right-click → "Find Bugs"</li>
+            <li>Select code and right-click → "Optimize Code"</li>
+            <li>Select code and right-click → "Generate Tests"</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>🎯 Extension Features Testing</h3>
+        <p><strong>Keyboard Shortcuts:</strong></p>
+        <ul>
+            <li>Press <code>Ctrl+Shift+A</code> to toggle the AI sidebar</li>
+        </ul>
+        
+        <p><strong>Extension Icon:</strong></p>
+        <ul>
+            <li>Click the 🤖 icon in the Chrome toolbar</li>
+            <li>Try the quick action buttons</li>
+            <li>Test the "Analyze Current Page" feature</li>
+        </ul>
+        
+        <p><strong>Floating Widget:</strong></p>
+        <ul>
+            <li>Look for the floating 🤖 widget on the page</li>
+            <li>Try dragging it to different positions</li>
+            <li>Click it to open the sidebar</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>🌐 Multi-language Testing</h3>
+        <p>Test translation features with these text samples:</p>
+        
+        <p><strong>English:</strong> <span class="highlight">Hello, how are you today? I hope you're having a wonderful day!</span></p>
+        
+        <p><strong>Sinhala:</strong> <span class="highlight">ආයුබෝවන්, ඔබට කොහොමද? ඔබට සුභ දිනයක් වේවා!</span></p>
+        
+        <p><strong>Tamil:</strong> <span class="highlight">வணக்கம், நீங்கள் எப்படி இருக்கிறீர்கள்? உங்களுக்கு நல்ல நாள் இருக்கட்டும்!</span></p>
+    </div>
+
+    <div class="test-section">
+        <h3>📝 Writing Improvement Testing</h3>
+        <p>Select and test grammar/writing improvement on this text:</p>
+        <p><span class="highlight">this is a sample text with some grammar mistake and awkward phrasing that could be improve by the AI assistant for better clarity and professional tone.</span></p>
+    </div>
+
+    <div class="warning">
+        <strong>⚠️ Important Notes:</strong>
+        <ul>
+            <li>Make sure you have a valid Gemini API key configured</li>
+            <li>The extension needs internet connection to work</li>
+            <li>Some features may take a few seconds to respond</li>
+            <li>If something doesn't work, check the browser console for errors</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>🔧 Troubleshooting</h3>
+        <p>If the extension isn't working:</p>
+        <ol>
+            <li>Check if the extension is enabled in <code>chrome://extensions/</code></li>
+            <li>Verify your API key is correctly entered</li>
+            <li>Refresh this page</li>
+            <li>Check the browser console (F12) for error messages</li>
+            <li>Try disabling and re-enabling the extension</li>
+        </ol>
+    </div>
+
+    <script>
+        // Add some interactive elements for testing
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('AI Assistant Extension Test Page Loaded');
+            console.log('Extension should inject content script and show floating widget');
+            
+            // Check if extension is loaded
+            setTimeout(() => {
+                const widget = document.getElementById('ai-assistant-widget');
+                if (widget) {
+                    console.log('✅ Extension loaded successfully - floating widget found');
+                } else {
+                    console.log('❌ Extension not detected - floating widget not found');
+                }
+            }, 2000);
+        });
+        
+        // Test function for extension communication
+        function testExtensionCommunication() {
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                chrome.runtime.sendMessage({action: 'test'}, function(response) {
+                    console.log('Extension communication test:', response);
+                });
+            } else {
+                console.log('Chrome extension API not available');
+            }
+        }
+        
+        // Run test after page load
+        setTimeout(testExtensionCommunication, 1000);
+    </script>
+</body>
+</html>
