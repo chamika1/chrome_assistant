@@ -3,7 +3,7 @@
 
 const CONFIG = {
   // Default Gemini API Key
-  DEFAULT_API_KEY: 'AIzaSyCTSoutDAGHhBzljAHF5PJ-uwYNIowRJdc',
+  DEFAULT_API_KEY: 'api-key',
   
   // API Configuration
   API_BASE_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent',
