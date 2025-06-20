@@ -1,15 +1,19 @@
 // Background service worker for Chrome AI Assistant Extension
 
+// Default API Key
+const DEFAULT_API_KEY = 'AIzaSyCTSoutDAGHhBzljAHF5PJ-uwYNIowRJdc';
+
 class GeminiAPI {
   constructor() {
-    this.apiKey = process.env.API_KEY;
+    this.apiKey = DEFAULT_API_KEY; // Use default API key
     this.baseURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
   }
 
   async initialize() {
     const result = await chrome.storage.sync.get(['geminiApiKey']);
-    // Use stored API key if available, otherwise use the default one
-    this.apiKey = result.geminiApiKey || process.env.API_KEY;
+    // Use stored API key if available, otherwise use default
+    this.apiKey = result.geminiApiKey || DEFAULT_API_KEY;
+    console.log('API initialized with key:', this.apiKey ? 'Key available' : 'No key');
   }
 
   async generateContent(prompt, context = '') {
@@ -236,6 +240,13 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 // Handle messages from content script and popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log('Background script received message:', request);
+  
+  if (request.action === 'ping') {
+    sendResponse({ success: true, message: 'Background script is running' });
+    return true;
+  }
+  
   if (request.action === 'generateContent') {
     geminiAPI.generateContent(request.prompt, request.context)
       .then(response => sendResponse({ success: true, response }))
@@ -244,16 +255,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   
   if (request.action === 'saveApiKey') {
+    console.log('Saving API key:', request.apiKey ? 'Key provided' : 'No key');
     chrome.storage.sync.set({ geminiApiKey: request.apiKey }, () => {
-      geminiAPI.apiKey = request.apiKey || process.env.API_KEY;
-      sendResponse({ success: true });
+      if (chrome.runtime.lastError) {
+        console.error('Error saving API key:', chrome.runtime.lastError);
+        sendResponse({ success: false, error: chrome.runtime.lastError.message });
+      } else {
+        console.log('API key saved successfully');
+        geminiAPI.apiKey = request.apiKey || DEFAULT_API_KEY;
+        sendResponse({ success: true });
+      }
     });
     return true;
   }
   
   if (request.action === 'getApiKey') {
     chrome.storage.sync.get(['geminiApiKey'], (result) => {
-      sendResponse({ apiKey: result.geminiApiKey || process.env.API_KEY });
+      if (chrome.runtime.lastError) {
+        console.error('Error getting API key:', chrome.runtime.lastError);
+        sendResponse({ success: false, error: chrome.runtime.lastError.message });
+      } else {
+        const apiKey = result.geminiApiKey || DEFAULT_API_KEY;
+        console.log('API key retrieved:', apiKey ? 'Key found' : 'No key');
+        sendResponse({ apiKey: apiKey });
+      }
     });
     return true;
   }

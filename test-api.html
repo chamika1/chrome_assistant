@@ -128,7 +128,16 @@
     <div class="info">
         <strong>API Configuration:</strong><br>
         Model: gemini-2.0-flash-exp<br>
-        API Key:  (configured)
+        API Key: <span id="api-key-status">Not configured</span>
+    </div>
+
+    <div class="test-container">
+        <h3>API Key Configuration</h3>
+        <div class="input-group">
+            <label for="api-key-input">Gemini API Key:</label>
+            <input type="password" id="api-key-input" placeholder="Enter your Gemini API key here...">
+        </div>
+        <button onclick="setApiKey()">Set API Key</button>
     </div>
 
     <div class="test-container">
@@ -167,13 +176,48 @@
     </div>
 
     <script>
-        const API_KEY = process.env.API_KEY;
+        let API_KEY = 'AIzaSyCTSoutDAGHhBzljAHF5PJ-uwYNIowRJdc'; // Default API key
         const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+
+        function setApiKey() {
+            const apiKeyInput = document.getElementById('api-key-input');
+            const apiKeyStatus = document.getElementById('api-key-status');
+            
+            if (apiKeyInput.value.trim()) {
+                API_KEY = apiKeyInput.value.trim();
+                apiKeyStatus.textContent = 'Configured ✓';
+                apiKeyStatus.style.color = 'green';
+                localStorage.setItem('gemini-api-key', API_KEY);
+                apiKeyInput.value = '';
+            } else {
+                alert('Please enter a valid API key');
+            }
+        }
+
+        function loadApiKey() {
+            const savedKey = localStorage.getItem('gemini-api-key');
+            const apiKeyStatus = document.getElementById('api-key-status');
+            
+            if (savedKey) {
+                API_KEY = savedKey;
+                apiKeyStatus.textContent = 'Custom Key Configured ✓';
+                apiKeyStatus.style.color = 'green';
+            } else {
+                // Use default API key
+                apiKeyStatus.textContent = 'Default Key Active ✓';
+                apiKeyStatus.style.color = 'blue';
+            }
+        }
 
         async function testAPI() {
             const prompt = document.getElementById('test-prompt').value;
             const responseDiv = document.getElementById('api-response');
             const testBtn = document.getElementById('test-btn');
+            
+            if (!API_KEY) {
+                showResponse(responseDiv, 'Please configure your API key first', 'error');
+                return;
+            }
             
             if (!prompt.trim()) {
                 showResponse(responseDiv, 'Please enter a test prompt', 'error');
@@ -293,6 +337,11 @@ console.log(divide(10, 0));`;
         }
         
         async function testFeature(prompt, responseDiv) {
+            if (!API_KEY) {
+                showResponse(responseDiv, 'Please configure your API key first', 'error');
+                return;
+            }
+            
             responseDiv.style.display = 'block';
             responseDiv.className = 'response';
             responseDiv.innerHTML = 'Testing feature...';
@@ -329,6 +378,7 @@ console.log(divide(10, 0));`;
         // Auto-test API on page load
         window.addEventListener('load', function() {
             console.log('Gemini 2.0 Flash API Test Page Loaded');
+            loadApiKey();
             console.log('API Key configured:', API_KEY ? 'Yes' : 'No');
             console.log('API URL:', API_URL);
         });

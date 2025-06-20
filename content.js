@@ -397,34 +397,46 @@ class AIAssistantUI {
   async callGeminiAPI(prompt, context = '') {
     return new Promise((resolve, reject) => {
       try {
-        if (!chrome.runtime) {
-          reject('Extension runtime not available');
+        // Check if extension context is still valid
+        if (!chrome.runtime || !chrome.runtime.id) {
+          reject('Extension context invalidated. Please reload the page.');
           return;
         }
+
+        const timeoutId = setTimeout(() => {
+          reject('Request timeout. Extension may need to be reloaded.');
+        }, 30000); // 30 second timeout
 
         chrome.runtime.sendMessage({
           action: 'generateContent',
           prompt: prompt,
           context: context
         }, (response) => {
+          clearTimeout(timeoutId);
+          
           if (chrome.runtime.lastError) {
-            reject(`Extension error: ${chrome.runtime.lastError.message}`);
+            const error = chrome.runtime.lastError.message;
+            if (error.includes('context invalidated') || error.includes('Extension context')) {
+              reject('Extension needs to be reloaded. Please refresh the page and try again.');
+            } else {
+              reject(`Extension error: ${error}`);
+            }
             return;
           }
           
           if (!response) {
-            reject('No response from background script');
+            reject('No response from background script. Extension may need to be reloaded.');
             return;
           }
           
           if (response.success) {
             resolve(response.response);
           } else {
-            reject(response.error || 'Unknown API error');
+            reject(response.error || 'API request failed');
           }
         });
       } catch (error) {
-        reject(`Extension communication error: ${error.message}`);
+        reject(`Extension communication error: ${error.message}. Try reloading the page.`);
       }
     });
   }
@@ -502,24 +514,57 @@ class AIAssistantUI {
   }
 
   async saveApiKey(apiKey) {
-    chrome.runtime.sendMessage({
-      action: 'saveApiKey',
-      apiKey: apiKey
-    }, (response) => {
-      if (response.success) {
-        this.showNotification('API key saved successfully!');
-      } else {
-        this.showNotification('Failed to save API key', 'error');
-      }
-    });
+    if (!apiKey || !apiKey.trim()) {
+      this.showNotification('Please enter a valid API key', 'error');
+      return;
+    }
+
+    try {
+      chrome.runtime.sendMessage({
+        action: 'saveApiKey',
+        apiKey: apiKey.trim()
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('Runtime error:', chrome.runtime.lastError);
+          this.showNotification(`Error: ${chrome.runtime.lastError.message}`, 'error');
+          return;
+        }
+
+        if (response && response.success) {
+          this.showNotification('API key saved successfully!');
+          // Clear the input field
+          if (this.sidebar) {
+            this.sidebar.querySelector('#api-key-input').value = '';
+          }
+        } else {
+          const errorMsg = response && response.error ? response.error : 'Failed to save API key';
+          this.showNotification(errorMsg, 'error');
+        }
+      });
+    } catch (error) {
+      console.error('Error saving API key:', error);
+      this.showNotification('Error saving API key: ' + error.message, 'error');
+    }
   }
 
   async loadSettings() {
-    chrome.runtime.sendMessage({ action: 'getApiKey' }, (response) => {
-      if (response.apiKey && this.sidebar) {
-        this.sidebar.querySelector('#api-key-input').value = response.apiKey;
-      }
-    });
+    try {
+      chrome.runtime.sendMessage({ action: 'getApiKey' }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('Error loading settings:', chrome.runtime.lastError);
+          return;
+        }
+
+        if (response && response.apiKey && this.sidebar) {
+          const apiKeyInput = this.sidebar.querySelector('#api-key-input');
+          if (apiKeyInput) {
+            apiKeyInput.value = response.apiKey;
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
   }
 
   changeTheme(theme) {

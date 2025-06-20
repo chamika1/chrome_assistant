@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Setup - Chrome AI Assistant</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .success { 
+            background: rgba(40, 167, 69, 0.2); 
+            border: 1px solid rgba(40, 167, 69, 0.5); 
+            color: #90ee90; 
+        }
+        .error { 
+            background: rgba(220, 53, 69, 0.2); 
+            border: 1px solid rgba(220, 53, 69, 0.5); 
+            color: #ffb3b3; 
+        }
+        .info { 
+            background: rgba(23, 162, 184, 0.2); 
+            border: 1px solid rgba(23, 162, 184, 0.5); 
+            color: #87ceeb; 
+        }
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .setup-steps {
+            counter-reset: step-counter;
+        }
+        .step {
+            counter-increment: step-counter;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border-left: 4px solid #fff;
+        }
+        .step::before {
+            content: "Step " counter(step-counter);
+            font-weight: bold;
+            color: #ffd700;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .api-key-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 10px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Quick Setup</h1>
+        <p>Chrome AI Assistant Extension</p>
+    </div>
+
+    <div class="container">
+        <div class="info">
+            <strong>✨ Good News!</strong><br>
+            Your extension is now pre-configured with a working API key!<br>
+            The API key has been automatically added to the extension.
+        </div>
+
+        <div class="api-key-display">
+            <strong>Configured API Key:</strong><br>
+            AIzaSyCTSoutDAGHhBzljAHF5PJ-uwYNIowRJdc
+        </div>
+
+        <div class="setup-steps">
+            <div class="step">
+                <strong>Load the Extension</strong><br>
+                1. Open Chrome and go to <code>chrome://extensions/</code><br>
+                2. Enable "Developer mode" (top right toggle)<br>
+                3. Click "Load unpacked" and select the extension folder
+            </div>
+
+            <div class="step">
+                <strong>Test the Extension</strong><br>
+                Click the button below to test if everything is working:
+                <br><br>
+                <button onclick="testExtension()">🧪 Test Extension</button>
+            </div>
+
+            <div class="step">
+                <strong>Start Using</strong><br>
+                • Right-click on any webpage to see AI Assistant context menu<br>
+                • Click the extension icon to open the sidebar<br>
+                • Use Ctrl+Shift+A as a keyboard shortcut
+            </div>
+        </div>
+
+        <div id="test-results"></div>
+    </div>
+
+    <div class="container">
+        <h3>🎯 Quick Test</h3>
+        <p>Test the API connection with a simple request:</p>
+        
+        <button onclick="quickApiTest()">Test API Connection</button>
+        <button onclick="openTestPages()">Open Test Pages</button>
+        
+        <div id="api-test-results"></div>
+    </div>
+
+    <script>
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function testExtension() {
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                showResult('test-results', '❌ Extension not loaded. Please load the extension first.', 'error');
+                return;
+            }
+
+            showResult('test-results', '✅ Extension is loaded successfully!<br>Extension ID: ' + chrome.runtime.id, 'success');
+
+            // Test background script
+            chrome.runtime.sendMessage({action: 'ping'}, (response) => {
+                if (chrome.runtime.lastError) {
+                    showResult('test-results', '❌ Background script error: ' + chrome.runtime.lastError.message, 'error');
+                } else {
+                    showResult('test-results', '✅ Extension is fully functional!<br>Background script is responding.', 'success');
+                }
+            });
+        }
+
+        function quickApiTest() {
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                showResult('api-test-results', '❌ Extension not loaded', 'error');
+                return;
+            }
+
+            showResult('api-test-results', '🔄 Testing API connection...', 'info');
+
+            chrome.runtime.sendMessage({
+                action: 'generateContent',
+                prompt: 'Hello! Please respond with "API is working perfectly!" to confirm the connection.'
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    showResult('api-test-results', '❌ Error: ' + chrome.runtime.lastError.message, 'error');
+                } else if (response && response.success) {
+                    showResult('api-test-results', `✅ API is working perfectly!<br><br><strong>Response:</strong><br>${response.response}`, 'success');
+                } else {
+                    showResult('api-test-results', '❌ API test failed: ' + (response ? response.error : 'No response'), 'error');
+                }
+            });
+        }
+
+        function openTestPages() {
+            // Open test pages in new tabs
+            window.open('test-api.html', '_blank');
+            window.open('extension-test.html', '_blank');
+            window.open('api-key-test.html', '_blank');
+            
+            showResult('api-test-results', '✅ Test pages opened in new tabs!', 'success');
+        }
+
+        // Auto-run extension test on page load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                if (typeof chrome !== 'undefined' && chrome.runtime) {
+                    testExtension();
+                } else {
+                    showResult('test-results', 'ℹ️ Load the extension first, then refresh this page to test.', 'info');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

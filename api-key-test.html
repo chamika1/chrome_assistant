@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Key Save Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .input-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔑 API Key Save Test</h1>
+    
+    <div class="info">
+        <strong>Instructions:</strong><br>
+        1. Make sure the Chrome extension is loaded<br>
+        2. Enter your Gemini API key below<br>
+        3. Click "Save API Key" to test the saving functionality<br>
+        4. Click "Load API Key" to verify it was saved correctly
+    </div>
+
+    <div class="container">
+        <h3>API Key Management</h3>
+        
+        <div class="input-group">
+            <label for="api-key-input">Gemini API Key:</label>
+            <input type="password" id="api-key-input" placeholder="Enter your Gemini API key here...">
+        </div>
+        
+        <button onclick="saveApiKey()">Save API Key</button>
+        <button onclick="loadApiKey()">Load API Key</button>
+        <button onclick="testApiKey()">Test API Key</button>
+        <button onclick="clearApiKey()">Clear API Key</button>
+        
+        <div id="status-display"></div>
+    </div>
+
+    <div class="container">
+        <h3>Debug Information</h3>
+        <button onclick="checkExtensionStatus()">Check Extension Status</button>
+        <button onclick="checkStoragePermissions()">Check Storage Permissions</button>
+        <button onclick="testDirectStorage()">Test Direct Storage</button>
+        
+        <div id="debug-info"></div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status-display');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showDebug(message) {
+            const debugDiv = document.getElementById('debug-info');
+            debugDiv.innerHTML += `<div class="status info">${message}</div>`;
+        }
+
+        function saveApiKey() {
+            const apiKey = document.getElementById('api-key-input').value.trim();
+            
+            if (!apiKey) {
+                showStatus('Please enter an API key', 'error');
+                return;
+            }
+
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                showStatus('Chrome extension not available', 'error');
+                return;
+            }
+
+            showStatus('Saving API key...', 'info');
+
+            chrome.runtime.sendMessage({
+                action: 'saveApiKey',
+                apiKey: apiKey
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    showStatus(`Error: ${chrome.runtime.lastError.message}`, 'error');
+                    return;
+                }
+
+                if (response && response.success) {
+                    showStatus('✅ API key saved successfully!', 'success');
+                    document.getElementById('api-key-input').value = '';
+                } else {
+                    showStatus('❌ Failed to save API key', 'error');
+                }
+            });
+        }
+
+        function loadApiKey() {
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                showStatus('Chrome extension not available', 'error');
+                return;
+            }
+
+            showStatus('Loading API key...', 'info');
+
+            chrome.runtime.sendMessage({
+                action: 'getApiKey'
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    showStatus(`Error: ${chrome.runtime.lastError.message}`, 'error');
+                    return;
+                }
+
+                if (response && response.apiKey) {
+                    showStatus('✅ API key loaded successfully!', 'success');
+                    document.getElementById('api-key-input').value = response.apiKey;
+                } else {
+                    showStatus('ℹ️ No API key found in storage', 'info');
+                }
+            });
+        }
+
+        function testApiKey() {
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                showStatus('Chrome extension not available', 'error');
+                return;
+            }
+
+            showStatus('Testing API key...', 'info');
+
+            chrome.runtime.sendMessage({
+                action: 'generateContent',
+                prompt: 'Hello! Please respond with "API key is working correctly" to confirm the connection.'
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    showStatus(`Error: ${chrome.runtime.lastError.message}`, 'error');
+                    return;
+                }
+
+                if (response && response.success) {
+                    showStatus(`✅ API key is working!<br><br>Response: ${response.response}`, 'success');
+                } else {
+                    showStatus(`❌ API key test failed: ${response ? response.error : 'No response'}`, 'error');
+                }
+            });
+        }
+
+        function clearApiKey() {
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                showStatus('Chrome extension not available', 'error');
+                return;
+            }
+
+            chrome.runtime.sendMessage({
+                action: 'saveApiKey',
+                apiKey: ''
+            }, (response) => {
+                if (response && response.success) {
+                    showStatus('✅ API key cleared successfully!', 'success');
+                    document.getElementById('api-key-input').value = '';
+                } else {
+                    showStatus('❌ Failed to clear API key', 'error');
+                }
+            });
+        }
+
+        function checkExtensionStatus() {
+            showDebug('Checking extension status...');
+            
+            if (typeof chrome === 'undefined') {
+                showDebug('❌ Chrome API not available');
+                return;
+            }
+
+            if (!chrome.runtime) {
+                showDebug('❌ Chrome runtime not available');
+                return;
+            }
+
+            if (!chrome.runtime.id) {
+                showDebug('❌ Extension ID not available');
+                return;
+            }
+
+            showDebug(`✅ Extension loaded successfully<br>Extension ID: ${chrome.runtime.id}`);
+            
+            // Check if background script is responding
+            chrome.runtime.sendMessage({action: 'ping'}, (response) => {
+                if (chrome.runtime.lastError) {
+                    showDebug(`❌ Background script error: ${chrome.runtime.lastError.message}`);
+                } else {
+                    showDebug('✅ Background script is responding');
+                }
+            });
+        }
+
+        function checkStoragePermissions() {
+            showDebug('Checking storage permissions...');
+            
+            if (typeof chrome === 'undefined' || !chrome.storage) {
+                showDebug('❌ Chrome storage API not available');
+                return;
+            }
+
+            // Test direct storage access
+            chrome.storage.sync.set({testKey: 'testValue'}, () => {
+                if (chrome.runtime.lastError) {
+                    showDebug(`❌ Storage write error: ${chrome.runtime.lastError.message}`);
+                } else {
+                    showDebug('✅ Storage write permission OK');
+                    
+                    // Test read
+                    chrome.storage.sync.get(['testKey'], (result) => {
+                        if (chrome.runtime.lastError) {
+                            showDebug(`❌ Storage read error: ${chrome.runtime.lastError.message}`);
+                        } else if (result.testKey === 'testValue') {
+                            showDebug('✅ Storage read permission OK');
+                            // Clean up
+                            chrome.storage.sync.remove(['testKey']);
+                        } else {
+                            showDebug('❌ Storage read/write mismatch');
+                        }
+                    });
+                }
+            });
+        }
+
+        function testDirectStorage() {
+            showDebug('Testing direct storage access...');
+            
+            const testApiKey = 'test-api-key-' + Date.now();
+            
+            // Direct storage test
+            chrome.storage.sync.set({geminiApiKey: testApiKey}, () => {
+                if (chrome.runtime.lastError) {
+                    showDebug(`❌ Direct storage save error: ${chrome.runtime.lastError.message}`);
+                } else {
+                    showDebug('✅ Direct storage save successful');
+                    
+                    // Read it back
+                    chrome.storage.sync.get(['geminiApiKey'], (result) => {
+                        if (chrome.runtime.lastError) {
+                            showDebug(`❌ Direct storage read error: ${chrome.runtime.lastError.message}`);
+                        } else if (result.geminiApiKey === testApiKey) {
+                            showDebug('✅ Direct storage read successful');
+                            // Clean up
+                            chrome.storage.sync.remove(['geminiApiKey']);
+                        } else {
+                            showDebug(`❌ Storage mismatch. Expected: ${testApiKey}, Got: ${result.geminiApiKey}`);
+                        }
+                    });
+                }
+            });
+        }
+
+        // Auto-run extension status check on page load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                checkExtensionStatus();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

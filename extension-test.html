@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Load Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Chrome Extension Load Test</h1>
+    
+    <div class="info">
+        <strong>Instructions:</strong><br>
+        1. Load the extension in Chrome (chrome://extensions/)<br>
+        2. Enable Developer mode<br>
+        3. Click "Load unpacked" and select the extension folder<br>
+        4. Come back to this page and run the tests below
+    </div>
+
+    <h2>Extension Status Tests</h2>
+    
+    <button onclick="testExtensionLoaded()">Test Extension Loaded</button>
+    <button onclick="testServiceWorker()">Test Service Worker</button>
+    <button onclick="testContextMenu()">Test Context Menu</button>
+    
+    <div id="test-results"></div>
+
+    <h2>Sample Text for Testing</h2>
+    <p id="sample-text" style="background: #f8f9fa; padding: 15px; border-radius: 5px; cursor: pointer;" 
+       onclick="selectText(this)">
+        This is sample text for testing the AI assistant. You can select this text and right-click to test the context menu functionality. The extension should provide options like "Explain Selected Text", "Summarize", "Translate", and "Improve Writing".
+    </p>
+
+    <script>
+        function addResult(message, type) {
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `status ${type}`;
+            resultDiv.innerHTML = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        function testExtensionLoaded() {
+            if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) {
+                addResult('✅ Extension is loaded successfully!<br>Extension ID: ' + chrome.runtime.id, 'success');
+                return true;
+            } else {
+                addResult('❌ Extension is not loaded or not accessible', 'error');
+                return false;
+            }
+        }
+
+        function testServiceWorker() {
+            if (!testExtensionLoaded()) return;
+
+            chrome.runtime.sendMessage({action: 'getApiKey'}, (response) => {
+                if (chrome.runtime.lastError) {
+                    addResult('❌ Service Worker Error: ' + chrome.runtime.lastError.message, 'error');
+                } else if (response) {
+                    addResult('✅ Service Worker is responding!<br>API Key status: ' + (response.apiKey ? 'Configured' : 'Not configured'), 'success');
+                } else {
+                    addResult('❌ Service Worker not responding', 'error');
+                }
+            });
+        }
+
+        function testContextMenu() {
+            addResult('ℹ�� To test context menu:<br>1. Select the sample text below<br>2. Right-click on the selected text<br>3. Look for "🤖 AI Assistant" in the context menu<br>4. Try the sub-menu options', 'info');
+        }
+
+        function selectText(element) {
+            const range = document.createRange();
+            range.selectNodeContents(element);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            addResult('✅ Text selected! Now right-click to test context menu.', 'info');
+        }
+
+        // Auto-run basic test on page load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                testExtensionLoaded();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
